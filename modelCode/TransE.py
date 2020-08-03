@@ -34,8 +34,7 @@ class dataSet(dataUnit):
         # read tripley
         self.triplet_train = pd.read_csv(self.path + self.attriTestFile  + "train.txt", sep='\t')
         if self.isValid == 1 : # 有valid
-            self.SimplE_validReplace = pd.read_csv(self.path + "replaceValidSet.txt", sep='\t')
-            self.SimplE_valid = pd.read_csv(self.path + "valid.txt", sep='\t')
+            self.triplet_valid = pd.read_csv(self.path + "valid.txt", sep='\t')
            
         # read testRank tripley
         files = os.listdir(self.path + testfile)
@@ -45,10 +44,10 @@ class dataSet(dataUnit):
             self.testRank.append(d)
                 
     def preprocess(self):
-        # get SimplE valid
+        # get valid
         if self.isValid == 1 : # 有valid
-            valid = self.SimplE_validReplace.values
-            self.SimplE_validationData = ([valid[:,0],valid[:,1],valid[:,2]],valid[:,3])     
+            valid = self.triplet_valid.values
+            self.triplet_validationData = ([valid[:,0],valid[:,1],valid[:,2]],valid[:,3])     
             # posKGTriplet_Train   
             self.posKGTriplet_Train = self.getPosTriplet(self.triplet_train, 1, self.path + self.attriTestFile +"posKGTriplet_Train.txt")
         else:
@@ -79,7 +78,7 @@ class creatModel(baseModel):
     def buildModel(self):
         # create Embedding layer
         self.createEmbedding()
-        # build SimplE model
+        # build TransE model
         self.buildTransE()
     
     def inverseScore(self, vects):
@@ -119,7 +118,7 @@ class creatModel(baseModel):
         neg_dissims = Lambda(self.getDissims, name="getNegDissims")([hn_v, tn_v, r_v])
         score = Lambda(self.transE_Score, name="TransE_Score")([pos_dissims, neg_dissims])
         
-        # build simplE model
+        # build TransE model
         self.model = Model([hp, tp, hn, tn, r], score, name='TransE')       
         # compile
         self.model.compile(optimizer='adam', loss=self.transE_calLoss)
@@ -138,7 +137,7 @@ class creatModel(baseModel):
                                                 shuffle=True)
 
         print("test on TransE ...")    
-        testTransE = self.test(self.predictModel, "SimplE", self.Data.testRank)
+        testTransE = self.test(self.predictModel, "Triplet", self.Data.testRank)
         # getHistory
         self.getHistory(test = {"testTransE":testTransE}, 
                                 history = history, 
@@ -148,5 +147,5 @@ class creatModel(baseModel):
     
     def Test(self):
         print("test on TransE ...")
-        testTransE = self.test(self.predictModel, "SimplE", self.Data.testRank)
+        testTransE = self.test(self.predictModel, "Triplet", self.Data.testRank)
         return {"TransE" : {"testTransE" : [testTransE]}}

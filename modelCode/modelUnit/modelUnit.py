@@ -95,6 +95,7 @@ class baseModel:
                 try:
                     self.historyRecord[modelName][eva].append(test[eva])
                 except:
+                    print("history parser error!")
                     pass
         
     def saveDic(self, path, data):
@@ -142,7 +143,7 @@ class baseModel:
         for test in testData:
             # 對每個 leave one out test set 都跑模型知道每個triplet的分數
             test = test.values
-            if modelName == "SimplE":
+            if modelName == "Triplet":
                 predic = predicModel.predict([test[:,0],test[:,1],test[:,2]], batch_size=None, verbose=0, steps=None)
             elif modelName == "BPR" or modelName == "NeuMF": # !!! test[:,0],test[:,2]
                 predic = predicModel.predict([test[:,0],test[:,1]], batch_size=None, verbose=0, steps=None)
@@ -150,7 +151,7 @@ class baseModel:
                 predic = predicModel.predict([test[:,0],test[:,2]], batch_size=None, verbose=0, steps=None)
             elif modelName == "attentionBPR":
                 validAttri = self.Data.getValidAttri(test[:,0],test[:,2])
-                predic = predicModel.predict([test[:,0],test[:,2],validAttri], batch_size=None, verbose=0, steps=None)
+                predic = predicModel.predict([test[:,0], test[:,1], test[:,2], validAttri], batch_size=None, verbose=0, steps=None)
 
             # 看正確答案有沒有在前1 5 10
             p = predic[-1]

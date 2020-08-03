@@ -35,7 +35,6 @@ class dataSet(dataUnit):
         # read tripley
         self.triplet_train = pd.read_csv(self.path + self.attriTestFile + "train.txt", sep='\t')
         if self.isValid == 1 : # 有valid
-            self.SimplE_validReplace = pd.read_csv(self.path + "replaceValidSet.txt", sep='\t')
             self.SimplE_valid = pd.read_csv(self.path + "valid.txt", sep='\t')
            
         # read testRank tripley
@@ -48,7 +47,7 @@ class dataSet(dataUnit):
     def preprocess(self):
         # get SimplE valid
         if self.isValid == 1 : # 有valid
-            valid = self.SimplE_validReplace.values
+            valid = self.SimplE_valid.values
             self.SimplE_validationData = ([valid[:,0],valid[:,1],valid[:,2]],valid[:,3])     
             # posKGTriplet_Train   
             self.posKGTriplet_Train = self.getPosTriplet(self.triplet_train, 1, self.path + self.attriTestFile + "posKGTriplet_Train.txt")
@@ -74,10 +73,29 @@ class creatModel(baseModel, SimplE):
     def createEmbedding(self):
         # embedding
         sqrt_size = 6.0 / math.sqrt(self.emSize)
-        self.R1_E = Embedding(self.Data.max_r, self.emSize, embeddings_regularizer=regularizers.l2(self.alpha), embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), name="R1_E", input_length=1)
-        self.R2_E = Embedding(self.Data.max_r, self.emSize, embeddings_regularizer=regularizers.l2(self.alpha), embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), name="R2_E", input_length=1)
-        self.Eh_E = Embedding(self.Data.max_e, self.emSize, embeddings_regularizer=regularizers.l2(self.alpha), embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), name="Eh_E", input_length=1)
-        self.Et_E = Embedding(self.Data.max_e, self.emSize, embeddings_regularizer=regularizers.l2(self.alpha), embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), name="Et_E", input_length=1)
+        self.R1_E = Embedding(self.Data.max_r, 
+                              self.emSize, 
+                              embeddings_regularizer=regularizers.l2(self.alpha), 
+                              embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), 
+                              name="R1_E", 
+                              input_length=1)
+        self.R2_E = Embedding(self.Data.max_r, 
+                              self.emSize, 
+                              embeddings_regularizer=regularizers.l2(self.alpha), 
+                              embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), 
+                              name="R2_E", 
+                              input_length=1)
+        self.Eh_E = Embedding(self.Data.max_e, 
+                              self.emSize, 
+                              embeddings_regularizer=regularizers.l2(self.alpha), 
+                              embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), 
+                              name="Eh_E", input_length=1)
+        self.Et_E = Embedding(self.Data.max_e, 
+                              self.emSize, 
+                              embeddings_regularizer=regularizers.l2(self.alpha), 
+                              embeddings_initializer = initializers.RandomUniform(minval=-sqrt_size, maxval=sqrt_size), 
+                              name="Et_E", 
+                              input_length=1)
 
     def buildModel(self):
         # create Embedding layer
@@ -102,7 +120,7 @@ class creatModel(baseModel, SimplE):
                                                 use_multiprocessing=self.mulitPreprocess,
                                                 shuffle=True)
             
-        testSimplE = self.test(self.SimplE, "SimplE", self.Data.testRank)
+        testSimplE = self.test(self.SimplE, "Triplet", self.Data.testRank)
         # getHistory
         self.getHistory(test = {"testSimplE":testSimplE}, 
                                 history = history, 
@@ -112,5 +130,5 @@ class creatModel(baseModel, SimplE):
     
     def Test(self):
         print("test on SimplE ...")
-        testSimplE = self.test(self.SimplE, "SimplE", self.Data.testRank)
+        testSimplE = self.test(self.SimplE, "Triplet", self.Data.testRank)
         return {"SimplE" : {"test" : [testSimplE]}}
