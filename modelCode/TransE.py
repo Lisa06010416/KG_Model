@@ -142,7 +142,7 @@ class creatModel(baseModel):
         self.getHistory(test = {"testTransE":testTransE}, 
                                 history = history, 
                                 modelName = "TransE", 
-                                recordList = ['loss', 'val_loss', 'calAccuracy', 'val_calAccuracy', "testTransE"])
+                                recordList = ['loss', "testTransE"])
         return self.model
     
     def Test(self):
